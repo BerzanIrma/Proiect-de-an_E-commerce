@@ -1,0 +1,82 @@
+@model Proiect__de_an.Models.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    var k = Url.Content("~/kaira/");
+    var idx = 0;
+}
+
+<section id="billboard" class="bg-light py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <h1 class="section-title text-center mt-4">Colecții noi</h1>
+      <div class="col-md-6 text-center">
+        <p>Descoperiți haine și accesorii pentru bărbați și femei.</p>
+      </div>
+    </div>
+    <div class="row mt-4">
+      <div class="col-md-12 text-center">
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-dark text-uppercase">Explorează</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="categories overflow-hidden py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">Categorii</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none d-block cat-item image-zoom-effect rounded overflow-hidden position-relative" style="aspect-ratio:16/10;">
+          <img src="@(k)images/cat-large-item1.jpg" alt="Haine" class="product-image img-fluid w-100 h-100 object-fit-cover">
+          <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white text-center" style="background: linear-gradient(transparent, rgba(0,0,0,.6));">
+            <span class="text-uppercase fw-bold fs-5">Haine</span>
+            <p class="mb-0 small opacity-90">Bărbați & Femei</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none d-block cat-item image-zoom-effect rounded overflow-hidden position-relative" style="aspect-ratio:16/10;">
+          <img src="@(k)images/cat-large-item2.jpg" alt="Accesorii" class="product-image img-fluid w-100 h-100 object-fit-cover">
+          <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white text-center" style="background: linear-gradient(transparent, rgba(0,0,0,.6));">
+            <span class="text-uppercase fw-bold fs-5">Accesorii</span>
+            <p class="mb-0 small opacity-90">Bărbați & Femei</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="new-arrival" class="py-5">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+      <h4 class="text-uppercase">Product Overview</h4>
+      <a asp-controller="Shop" asp-action="Index" class="btn-link">Toate produsele</a>
+    </div>
+    <div class="row g-4">
+      @foreach (var p in Model.OverviewProducts)
+      {
+        idx = (Model.OverviewProducts.IndexOf(p) % 10) + 1;
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="product-item image-zoom-effect link-effect">
+            <div class="image-holder position-relative">
+              <img src="@(k)images/product-item-@(idx).jpg" alt="@p.Name" class="product-image img-fluid">
+              <div class="product-content mt-2">
+                <h5 class="element-title text-uppercase fs-6">@p.Name</h5>
+                <span>@p.Price.ToString("C")</span>
+                <form method="post" asp-controller="Cart" asp-action="AddToCart" class="mt-2" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@p.Id" />
+                  <input type="hidden" name="name" value="@p.Name" />
+                  <input type="hidden" name="price" value="@p.Price.ToString("G", System.Globalization.CultureInfo.InvariantCulture)" />
+                  <input type="hidden" name="quantity" value="1" />
+                  <button type="submit" class="btn btn-dark btn-sm w-100 text-uppercase" aria-label="Adaugă @p.Name în coș">Adaugă în coș</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

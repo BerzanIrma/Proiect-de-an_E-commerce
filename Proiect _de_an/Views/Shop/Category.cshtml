@@ -1,0 +1,40 @@
+@model Proiect__de_an.Models.CategoryViewModel
+@{
+    ViewData["Title"] = Model.CategoryName;
+    var k = Url.Content("~/kaira/");
+    var idx = 0;
+}
+
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+      <h1 class="section-title mb-0">@Model.CategoryName</h1>
+      <a asp-action="Index" class="btn-link">← Înapoi la categorii</a>
+    </div>
+    <div class="row g-4">
+      @foreach (var p in Model.Products)
+      {
+        idx = (Model.Products.IndexOf(p) % 10) + 1;
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="product-item image-zoom-effect link-effect">
+            <div class="image-holder position-relative">
+              <img src="@(k)images/product-item-@(idx).jpg" alt="@p.Name" class="product-image img-fluid">
+              <div class="product-content mt-2">
+                <h5 class="element-title text-uppercase fs-6">@p.Name</h5>
+                <span>@p.Price.ToString("C")</span>
+                <form method="post" asp-controller="Cart" asp-action="AddToCart" class="mt-2" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@p.Id" />
+                  <input type="hidden" name="name" value="@p.Name" />
+                  <input type="hidden" name="price" value="@p.Price.ToString("G", System.Globalization.CultureInfo.InvariantCulture)" />
+                  <input type="hidden" name="quantity" value="1" />
+                  <button type="submit" class="btn btn-dark btn-sm w-100 text-uppercase" aria-label="Adaugă @p.Name în coș">Adaugă în coș</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

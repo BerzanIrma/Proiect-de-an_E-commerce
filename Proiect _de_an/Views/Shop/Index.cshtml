@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Magazin";
+    var k = Url.Content("~/kaira/");
+}
+
+<section class="py-5">
+  <div class="container">
+    <h1 class="section-title text-center mb-2">Magazin</h1>
+    <p class="text-center text-secondary mb-5">Alege categoria și explorează produsele.</p>
+
+    <div class="mb-5">
+      <h2 class="h5 text-uppercase fw-bold mb-4 border-bottom pb-2">Haine</h2>
+      <div class="row g-4">
+        <div class="col-sm-6 col-lg-3">
+          <a asp-action="HaineBarbati" class="text-decoration-none d-block rounded overflow-hidden shadow-sm image-zoom-effect">
+            <img src="@(k)images/cat-item1.jpg" alt="Haine Bărbați" class="img-fluid w-100" style="aspect-ratio:1;object-fit:cover;">
+            <div class="p-3 bg-light text-center">
+              <span class="text-dark fw-semibold text-uppercase">Haine Bărbați</span>
+            </div>
+          </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <a asp-action="HaineFemei" class="text-decoration-none d-block rounded overflow-hidden shadow-sm image-zoom-effect">
+            <img src="@(k)images/cat-item2.jpg" alt="Haine Femei" class="img-fluid w-100" style="aspect-ratio:1;object-fit:cover;">
+            <div class="p-3 bg-light text-center">
+              <span class="text-dark fw-semibold text-uppercase">Haine Femei</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="h5 text-uppercase fw-bold mb-4 border-bottom pb-2">Accesorii</h2>
+      <div class="row g-4">
+        <div class="col-sm-6 col-lg-3">
+          <a asp-action="AccesoriiBarbati" class="text-decoration-none d-block rounded overflow-hidden shadow-sm image-zoom-effect">
+            <img src="@(k)images/cat-item3.jpg" alt="Accesorii Bărbați" class="img-fluid w-100" style="aspect-ratio:1;object-fit:cover;">
+            <div class="p-3 bg-light text-center">
+              <span class="text-dark fw-semibold text-uppercase">Accesorii Bărbați</span>
+            </div>
+          </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <a asp-action="AccesoriiFemei" class="text-decoration-none d-block rounded overflow-hidden shadow-sm image-zoom-effect">
+            <img src="@(k)images/cat-sm-item.jpg" alt="Accesorii Femei" class="img-fluid w-100" style="aspect-ratio:1;object-fit:cover;">
+            <div class="p-3 bg-light text-center">
+              <span class="text-dark fw-semibold text-uppercase">Accesorii Femei</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

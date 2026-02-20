@@ -1,0 +1,58 @@
+@model Proiect__de_an.Models.CartViewModel
+@{
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+<div class="order-md-last">
+  <h2 id="cart-title" class="h5 d-flex justify-content-between align-items-center mb-3">
+    <span class="text-primary">Coșul tău</span>
+    <span class="badge bg-primary rounded-pill" aria-live="polite">@Model.TotalItems</span>
+  </h2>
+  @if (Model.Items.Count == 0)
+  {
+    <p class="text-body-secondary">Coșul este gol.</p>
+    <a asp-controller="Shop" asp-action="Index" class="w-100 btn btn-outline-primary">Cumpără acum</a>
+  }
+  else
+  {
+    <ul class="list-group list-group-flush mb-3" aria-labelledby="cart-title">
+      @for (var i = 0; i < Model.Items.Count; i++)
+      {
+        var item = Model.Items[i];
+        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+          <div>
+            <strong>@item.Name</strong>
+            <span class="text-secondary small">× @item.Quantity</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span>@item.LineTotal.ToString("C")</span>
+            <form method="post" asp-controller="Cart" asp-action="Remove" asp-route-index="@i" asp-route-returnUrl="@returnUrl" class="d-inline">
+              @Html.AntiForgeryToken()
+              <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Șterge @item.Name din coș">×</button>
+            </form>
+          </div>
+        </li>
+      }
+    </ul>
+    <p class="d-flex justify-content-between mb-1"><span>Subtotal</span> <span>@Model.Subtotal.ToString("C")</span></p>
+    <div class="mb-3">
+      <label class="form-label small fw-bold">Livrare</label>
+      <form method="post" asp-controller="Cart" asp-action="SetDelivery" asp-route-returnUrl="@returnUrl" id="form-delivery">
+        @Html.AntiForgeryToken()
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="deliveryType" id="delivery-standard" value="Standard" @(Model.DeliveryType == "Standard" ? "checked" : "") onchange="this.form.submit()" aria-describedby="delivery-standard-desc">
+          <label class="form-check-label" for="delivery-standard">
+            Standard — 5,00 lei <span id="delivery-standard-desc" class="text-muted small">(3–5 zile)</span>
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="deliveryType" id="delivery-express" value="Express" @(Model.DeliveryType == "Express" ? "checked" : "") onchange="this.form.submit()" aria-describedby="delivery-express-desc">
+          <label class="form-check-label" for="delivery-express">
+            Express — 15,00 lei <span id="delivery-express-desc" class="text-muted small">(1–2 zile)</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <p class="d-flex justify-content-between fw-bold mb-3"><span>Total</span> <span>@Model.Total.ToString("C")</span></p>
+    <a asp-controller="Cart" asp-action="Checkout" class="w-100 btn btn-primary btn-lg">Finalizare comandă</a>
+  }
+</div>

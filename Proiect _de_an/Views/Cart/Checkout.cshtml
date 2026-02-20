@@ -1,0 +1,39 @@
+@model Proiect__de_an.Models.CartViewModel
+@{
+    ViewData["Title"] = "Finalizare comandă";
+}
+
+<section class="py-5">
+  <div class="container">
+    <h1 class="mb-4">Finalizare comandă</h1>
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Detalii livrare</h5>
+            <p class="mb-1"><strong>Tip livrare:</strong> @(Model.DeliveryType == "Express" ? "Express (1–2 zile lucrătoare)" : "Standard (3–5 zile lucrătoare)")</p>
+            <p class="mb-3 text-muted small">Cost livrare: @Model.DeliveryCost.ToString("C")</p>
+            <hr />
+            <h6 class="mb-2">Produse</h6>
+            <ul class="list-unstyled mb-3">
+              @foreach (var item in Model.Items)
+              {
+                <li class="d-flex justify-content-between py-1">
+                  <span>@item.Name × @item.Quantity</span>
+                  <span>@item.LineTotal.ToString("C")</span>
+                </li>
+              }
+            </ul>
+            <p class="d-flex justify-content-between mb-1"><span>Subtotal</span> <span>@Model.Subtotal.ToString("C")</span></p>
+            <p class="d-flex justify-content-between mb-1"><span>Livrare</span> <span>@Model.DeliveryCost.ToString("C")</span></p>
+            <p class="d-flex justify-content-between fw-bold"><span>Total</span> <span>@Model.Total.ToString("C")</span></p>
+            <div class="alert alert-success mt-3 mb-0" role="status">
+              Comanda ta a fost înregistrată (demo). Livrare: <strong>@Model.DeliveryType</strong>.
+            </div>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary mt-3">Înapoi la start</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

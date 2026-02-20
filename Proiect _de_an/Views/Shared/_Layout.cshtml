@@ -1,0 +1,156 @@
+@{
+    var k = Url.Content("~/kaira/");
+}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <title>@ViewData["Title"] - Stylish Store</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="@(k)css/vendor.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+  <link rel="stylesheet" type="text/css" href="@(k)style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700&family=Marcellus&display=swap" rel="stylesheet">
+  <style>
+    .navbar .dropdown-menu { min-width: 11rem; }
+    .navbar .nav-link { letter-spacing: 0.04em; }
+    .image-zoom-effect { transition: transform 0.35s ease; overflow: hidden; }
+    .image-zoom-effect:hover { transform: scale(1.03); }
+  </style>
+</head>
+<body class="homepage">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <defs>
+      <symbol id="arrow-left" viewBox="0 0 24 24"><path fill="currentColor" d="M17 11H9.41l3.3-3.29a1 1 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33a1 1 0 0 0 0 .76a1 1 0 0 0 .21.33l5 5a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42L9.41 13H17a1 1 0 0 0 0-2Z" /></symbol>
+      <symbol id="arrow-right" viewBox="0 0 24 24"><path fill="currentColor" d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 0 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 0 0 0 1.42a1 1 0 0 0 1.42 0l5-5a1 1 0 0 0 .21-.33a1 1 0 0 0 0-.76Z" /></symbol>
+      <symbol id="cart" viewBox="0 0 24 24"><path fill="currentColor" d="M8.5 19a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 8.5 19ZM19 16H7a1 1 0 0 1 0-2h8.491a3.013 3.013 0 0 0 2.885-2.176l1.585-5.55A1 1 0 0 0 19 5H6.74a3.007 3.007 0 0 0-2.82-2H3a1 1 0 0 0 0 2h.921a1.005 1.005 0 0 1 .962.725l.155.545v.005l1.641 5.742A3 3 0 0 0 7 18h12a1 1 0 0 0 0-2Zm-1.326-9l-1.22 4.274a1.005 1.005 0 0 1-.963.726H8.754l-.255-.892L7.326 7ZM16.5 19a1.5 1.5 0 1 0 1.5 1.5a1.5 1.5 0 0 0-1.5-1.5Z" /></symbol>
+      <symbol id="search" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" /></symbol>
+      <symbol id="heart" viewBox="0 0 24 24"><path fill="currentColor" d="M20.16 4.61A6.27 6.27 0 0 0 12 4a6.27 6.27 0 0 0-8.16 9.48l7.45 7.45a1 1 0 0 0 1.42 0l7.45-7.45a6.27 6.27 0 0 0 0-8.87Zm-1.41 7.46L12 18.81l-6.75-6.74a4.28 4.28 0 0 1 3-7.3a4.25 4.25 0 0 1 3 1.25a1 1 0 0 0 1.42 0a4.27 4.27 0 0 1 6 6.05Z" /></symbol>
+      <symbol id="facebook" viewBox="0 0 15 15"><path fill="none" stroke="currentColor" d="M7.5 14.5a7 7 0 1 1 0-14a7 7 0 0 1 0 14Zm0 0v-8a2 2 0 0 1 2-2h.5m-5 4h5" /></symbol>
+      <symbol id="instagram" viewBox="0 0 15 15"><path fill="none" stroke="currentColor" d="M11 3.5h1M4.5.5h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4Zm3 10a3 3 0 1 1 0-6a3 3 0 0 1 0 6Z" /></symbol>
+    </defs>
+  </svg>
+
+  <div class="preloader text-white fs-6 text-uppercase overflow-hidden"></div>
+
+  <div class="search-popup">
+    <div class="search-popup-container">
+      <form role="search" method="get" class="form-group" action="">
+        <input type="search" id="search-form" class="form-control border-0 border-bottom" placeholder="Caută..." name="s" />
+        <button type="submit" class="search-submit border-0 position-absolute bg-white" style="top: 15px;right: 15px;"><svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#search"></use></svg></button>
+      </form>
+      <h5 class="cat-list-title">Categorii</h5>
+      <ul class="cat-list">
+        <li class="cat-list-item"><a asp-controller="Shop" asp-action="HaineBarbati" class="item-anchor">Haine Bărbați</a></li>
+        <li class="cat-list-item"><a asp-controller="Shop" asp-action="HaineFemei" class="item-anchor">Haine Femei</a></li>
+        <li class="cat-list-item"><a asp-controller="Shop" asp-action="AccesoriiBarbati" class="item-anchor">Accesorii Bărbați</a></li>
+        <li class="cat-list-item"><a asp-controller="Shop" asp-action="AccesoriiFemei" class="item-anchor">Accesorii Femei</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="cart-title">
+    <div class="offcanvas-header border-bottom">
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Închide coșul"></button>
+    </div>
+    <div class="offcanvas-body">
+      @await Component.InvokeAsync("Cart")
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light text-uppercase fs-6 border-bottom py-3">
+    <div class="container-fluid px-3 px-lg-4">
+      <a class="navbar-brand text-dark fw-bold" asp-controller="Home" asp-action="Index" style="font-size:1.35rem;letter-spacing:0.06em;">Stylish STORE</a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Meniu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav gap-1 gap-lg-4 me-auto">
+          <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link text-dark dropdown-toggle" href="#" id="dropdownHaine" data-bs-toggle="dropdown" aria-expanded="false">Haine</a>
+            <ul class="dropdown-menu dropdown-menu-lg-end shadow-sm border-0" aria-labelledby="dropdownHaine">
+              <li><a class="dropdown-item" asp-controller="Shop" asp-action="HaineBarbati">Haine Bărbați</a></li>
+              <li><a class="dropdown-item" asp-controller="Shop" asp-action="HaineFemei">Haine Femei</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link text-dark dropdown-toggle" href="#" id="dropdownAccesorii" data-bs-toggle="dropdown" aria-expanded="false">Accesorii</a>
+            <ul class="dropdown-menu dropdown-menu-lg-end shadow-sm border-0" aria-labelledby="dropdownAccesorii">
+              <li><a class="dropdown-item" asp-controller="Shop" asp-action="AccesoriiBarbati">Accesorii Bărbați</a></li>
+              <li><a class="dropdown-item" asp-controller="Shop" asp-action="AccesoriiFemei">Accesorii Femei</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Shop" asp-action="Index">Magazin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav flex-row align-items-center gap-2 gap-lg-3">
+          <li class="nav-item">
+            <a href="#" class="nav-link text-dark p-0 d-flex align-items-center gap-1 position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-label="Coș de cumpărături">
+              <svg width="22" height="22" viewBox="0 0 24 24" class="d-lg-none" aria-hidden="true"><use xlink:href="#cart"></use></svg>
+              <span class="d-none d-lg-inline text-uppercase">Coș (<vc:cart-count />)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#search" class="search-button nav-link text-dark p-0" aria-label="Caută">
+              <svg width="22" height="22" viewBox="0 0 24 24"><use xlink:href="#search"></use></svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  @if (TempData["CartMessage"] != null)
+  {
+    <div class="alert alert-success alert-dismissible fade show rounded-0 mb-0 text-center" role="alert">
+      @TempData["CartMessage"]
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Închide"></button>
+    </div>
+  }
+
+  @RenderBody()
+
+  <footer class="bg-light border-top py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <h5 class="text-uppercase fw-bold mb-3">Stylish Store</h5>
+          <p class="text-secondary small">Magazin online de haine și accesorii.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5 class="text-uppercase fw-bold mb-3">Link-uri</h5>
+          <ul class="list-unstyled">
+            <li><a asp-controller="Home" asp-action="Index" class="text-secondary text-decoration-none">Home</a></li>
+            <li><a asp-controller="Shop" asp-action="Index" class="text-secondary text-decoration-none">Magazin</a></li>
+            <li><a asp-controller="Home" asp-action="Privacy" class="text-secondary text-decoration-none">Privacy</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5 class="text-uppercase fw-bold mb-3">Contact</h5>
+          <p class="text-secondary small">contact@stylishstore.ro</p>
+        </div>
+      </div>
+      <div class="border-top pt-4 text-center text-secondary small">
+        © @DateTime.Now.Year Stylish Store. Proiect de an.
+      </div>
+    </div>
+  </footer>
+
+  <script src="@(k)js/jquery.min.js"></script>
+  <script src="@(k)js/plugins.js"></script>
+  <script src="@(k)js/SmoothScroll.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+  <script src="@(k)js/script.min.js"></script>
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
