@@ -2,9 +2,7 @@
 
 namespace Proiect__de_an.Core.Lab3.Singleton
 {
-    /// <summary>
-    /// Singleton: o singură instanță de setări globale pentru magazin (Lab3).
-    /// </summary>
+
     public sealed class StoreSettings
     {
         private static volatile StoreSettings instance;

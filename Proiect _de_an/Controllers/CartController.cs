@@ -25,9 +25,20 @@ public class CartController : Controller
             decimal.TryParse(price?.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out priceValue);
         var qty = quantity < 1 ? 1 : quantity;
         _cart.AddItem(id, name, priceValue, qty);
+        var vm = _cart.GetCartViewModel();
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            return Json(new { success = true, totalItems = vm.TotalItems, message = $"{name} a fost adăugat în coș." });
+        }
         TempData["CartMessage"] = $"{name} a fost adăugat în coș.";
-        TempData["CartPreview"] = JsonSerializer.Serialize(_cart.GetCartViewModel());
+        TempData["CartPreview"] = JsonSerializer.Serialize(vm);
         return Redirect(string.IsNullOrEmpty(returnUrl) ? Url.Action("Index", "Home") ?? "/" : returnUrl);
+    }
+
+    [HttpGet]
+    public IActionResult GetCartFragment()
+    {
+        return ViewComponent("Cart");
     }
 
     [HttpPost]

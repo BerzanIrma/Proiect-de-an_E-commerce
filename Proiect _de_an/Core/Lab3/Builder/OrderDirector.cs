@@ -1,13 +1,10 @@
-using System;
+﻿using System;
 using Proiect__de_an.Core.Lab2.AbstractFactory;
 using Proiect__de_an.Core.Lab2.FactoryMethod;
 
 namespace Proiect__de_an.Core.Lab3.Builder
 {
-    /// <summary>
-    /// Directorul care știe pașii de construire a unei comenzi.
-    /// CreateOrder(builder): void — clientul obține Order apelând builder.Build() după.
-    /// </summary>
+ 
     public class OrderDirector
     {
         public void CreateOrder(IOrderBuilder builder)

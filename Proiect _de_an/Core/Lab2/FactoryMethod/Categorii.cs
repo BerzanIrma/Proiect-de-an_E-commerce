@@ -4,7 +4,7 @@
     // Fiecare fabrică creează produse fizice într-o categorie: Haine sau Accesorii.
     // Folosire: var p = new HaineProductFactory().CreateProduct("1", "Bluză", 89m);
 
-    public static class Categorii
+    public static class Categorii  //inloc de class mai bine enums
     {
         public const string Haine = "Haine";
         public const string Accesorii = "Accesorii";
