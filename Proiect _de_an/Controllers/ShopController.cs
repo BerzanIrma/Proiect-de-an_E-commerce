@@ -78,7 +78,7 @@ namespace Proiect__de_an.Controllers
                 factory.CreateProduct("4", "Ochelari soare", 120m),
                 factory.CreateProduct("5", "Eșarfă", 55m)
             };
-            return View("Category", new CategoryViewModel { CategoryName = "Accesorii Bărbați", Products = products });
+            return View("Category", new CategoryViewModel { CategoryName = "Genti", Products = products });
         }
 
         public IActionResult AccesoriiFemei()
@@ -92,7 +92,7 @@ namespace Proiect__de_an.Controllers
                 factory.CreateProduct("4", "Căciulă", 89m),
                 factory.CreateProduct("5", "Colier", 65m)
             };
-            return View("Category", new CategoryViewModel { CategoryName = "Accesorii Femei", Products = products });
+            return View("Category", new CategoryViewModel { CategoryName = "Eșarfe", Products = products });
         }
     }
 }

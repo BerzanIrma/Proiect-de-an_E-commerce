@@ -1,12 +1,10 @@
-using System;
+﻿using System;
 using Proiect__de_an.Core.Lab2.AbstractFactory;
 using Proiect__de_an.Core.Lab2.FactoryMethod;
 
 namespace Proiect__de_an.Core.Lab3.Builder
 {
-    /// <summary>
-    /// Implementare concretă de Builder pentru comenzi.
-    /// </summary>
+  
     public class DefaultOrderBuilder : IOrderBuilder
     {
         private Order _order = new();
@@ -34,7 +32,7 @@ namespace Proiect__de_an.Core.Lab3.Builder
 
         public Order Build()
         {
-            // Returnează comanda curentă și resetează builder-ul
+            // Returneaza comanda curenta si reseteaza builder-ul
             var built = _order;
             _order = new Order();
             return built;

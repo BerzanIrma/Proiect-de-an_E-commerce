@@ -1,14 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Proiect__de_an.Core.Lab2.AbstractFactory;
 using Proiect__de_an.Core.Lab2.FactoryMethod;
 
 namespace Proiect__de_an.Core.Lab3.Builder
 {
-    /// <summary>
-    /// Produsul construit de Builder: o comandă care conține produse,
-    /// un serviciu de livrare și un procesator de plată.
-    /// </summary>
+    
     public class Order
     {
         private readonly List<IProduct> _products = new();

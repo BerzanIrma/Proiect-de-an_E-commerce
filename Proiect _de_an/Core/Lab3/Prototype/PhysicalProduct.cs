@@ -1,9 +1,6 @@
 ﻿namespace Proiect__de_an.Core.Lab3.Prototype
 {
-    /// <summary>
-    /// Produs fizic clonabil — implementare concretă Prototype.
-    /// Conform diagramei: câmpuri private, Clone() returnează IPrototype.
-    /// </summary>
+
     public class PhysicalProduct : IPrototype
     {
         private readonly string id;
