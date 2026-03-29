@@ -7,10 +7,10 @@ namespace Proiect__de_an.ViewComponents;
 
 public class CartViewComponent : ViewComponent
 {
-    private readonly CartService _cart;
+    private readonly ICartService _cart;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public CartViewComponent(CartService cart)
+    public CartViewComponent(ICartService cart)
     {
         _cart = cart;
     }

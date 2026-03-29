@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Proiect__de_an.Core.Lab2.AbstractFactory;
 using Proiect__de_an.Core.Lab3.Builder;
 using Proiect__de_an.Core.Lab3.Singleton;
 using Proiect__de_an.Core.Lab4.Adapter;
 using Proiect__de_an.Core.Lab4.Composite;
-
+using Proiect__de_an.Core.Lab5.Decorator;
 namespace Proiect__de_an.Core.Lab4.Facade
 {
     public class ECommerceFacade
@@ -54,6 +54,32 @@ namespace Proiect__de_an.Core.Lab4.Facade
 
             var orderId = Guid.NewGuid().ToString("N")[..8];
             return expressFactory.CreateOrder(orderId, total);
+        }
+
+        /// <summary>
+        /// Creează o comandă standard și aplică o reducere (Decorator).
+        /// </summary>
+        public IOrder CreateStandardOrderWithDiscount(decimal productsTotal, decimal discountPercent)
+        {
+            var order = CreateStandardOrder(productsTotal);
+            return new DiscountOrderDecorator(order, discountPercent);
+        }
+
+        /// <summary>
+        /// Creează o comandă express și aplică o reducere (Decorator).
+        /// </summary>
+        public IOrder CreateExpressOrderWithDiscount(decimal productsTotal, decimal discountPercent)
+        {
+            var order = CreateExpressOrder(productsTotal);
+            return new DiscountOrderDecorator(order, discountPercent);
+        }
+
+        /// <summary>
+        /// Adaugă ambalaj cadou la orice comandă (Decorator). Funcționează cu Standard, Express sau Builder.
+        /// </summary>
+        public IOrder CreateOrderWithGiftWrap(IOrder order, decimal giftWrapFee)
+        {
+            return new GiftWrapOrderDecorator(order, giftWrapFee);
         }
 
         /// <summary>

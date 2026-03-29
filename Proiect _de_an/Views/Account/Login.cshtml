@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Autentificare";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+<section class="py-5">
+  <div class="container" style="max-width: 520px;">
+    <h1 class="h3 mb-4">Autentificare</h1>
+
+    @if (TempData["CartWarning"] is string cartWarning && !string.IsNullOrWhiteSpace(cartWarning))
+    {
+      <div class="alert alert-warning" role="alert">@cartWarning</div>
+    }
+    @if (TempData["AuthError"] is string authError && !string.IsNullOrWhiteSpace(authError))
+    {
+      <div class="alert alert-danger" role="alert">@authError</div>
+    }
+
+    <form method="post" asp-action="Login">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="password">Parolă</label>
+        <input class="form-control" id="password" name="password" type="password" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    <p class="text-muted small mt-3 mb-0">
+      Conturi demo: <code>user/user</code> (User), <code>admin/admin</code> (Admin)
+    </p>
+  </div>
+</section>
+

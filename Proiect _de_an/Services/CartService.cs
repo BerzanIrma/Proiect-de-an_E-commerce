@@ -1,19 +1,22 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Proiect__de_an.Core.Lab5.Flyweight;
 using Proiect__de_an.Models;
 
 namespace Proiect__de_an.Services;
 
-public class CartService
+public class CartService : ICartService
 {
     private const string CartKey = "Cart";
     private const string DeliveryKey = "DeliveryType";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ProductFlyweightFactory _flyweightFactory;
 
-    public CartService(IHttpContextAccessor httpContextAccessor)
+    public CartService(IHttpContextAccessor httpContextAccessor, ProductFlyweightFactory flyweightFactory)
     {
         _httpContextAccessor = httpContextAccessor;
+        _flyweightFactory = flyweightFactory;
     }
 
     private ISession Session => _httpContextAccessor.HttpContext?.Session
@@ -48,6 +51,7 @@ public class CartService
 
     public void AddItem(string id, string name, decimal price, int quantity = 1)
     {
+        _flyweightFactory.GetFlyweight(id, name, price); // înregistrează/partajează flyweight (intrinsic)
         var cart = GetCart();
         var existing = cart.FirstOrDefault(i => i.Id == id);
         if (existing != null)
@@ -69,10 +73,25 @@ public class CartService
 
     public CartViewModel GetCartViewModel()
     {
+        var rawCart = GetCart();
+        var items = new List<CartItem>();
+        foreach (var line in rawCart)
+        {
+            var fw = _flyweightFactory.GetFlyweight(line.Id, line.Name, line.Price);
+            items.Add(new CartItem
+            {
+                Id = fw.Id,
+                Name = fw.Name,
+                Price = fw.Price,
+                Quantity = line.Quantity
+            });
+        }
         return new CartViewModel
         {
-            Items = GetCart(),
-            DeliveryType = GetDeliveryType()
+            Items = items,
+            DeliveryType = GetDeliveryType(),
+            FlyweightCacheSize = _flyweightFactory.GetCacheSize(),
+            CartLinesCount = items.Count
         };
     }
 }

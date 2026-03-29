@@ -7,6 +7,14 @@
     <span class="text-primary">Coșul tău</span>
     <span class="badge bg-primary rounded-pill" aria-live="polite">@Model.TotalItems</span>
   </h2>
+  @if (TempData["CartError"] is string cartError && !string.IsNullOrWhiteSpace(cartError))
+  {
+    <div class="alert alert-danger py-2 px-3" role="alert">@cartError</div>
+  }
+  @if (TempData["CartWarning"] is string cartWarning && !string.IsNullOrWhiteSpace(cartWarning))
+  {
+    <div class="alert alert-warning py-2 px-3" role="alert">@cartWarning</div>
+  }
   @if (Model.Items.Count == 0)
   {
     <p class="text-body-secondary">Coșul este gol.</p>
@@ -53,6 +61,10 @@
       </form>
     </div>
     <p class="d-flex justify-content-between fw-bold mb-3"><span>Total</span> <span>@Model.Total.ToString("C")</span></p>
+    @if (Model.FlyweightCacheSize.HasValue && Model.CartLinesCount.HasValue)
+    {
+      <p class="small text-muted mb-2">Flyweight: <strong>@Model.FlyweightCacheSize</strong> produse unice / <strong>@Model.CartLinesCount</strong> linii</p>
+    }
     <a asp-controller="Cart" asp-action="Checkout" class="w-100 btn btn-primary btn-lg">Finalizare comandă</a>
   }
 </div>

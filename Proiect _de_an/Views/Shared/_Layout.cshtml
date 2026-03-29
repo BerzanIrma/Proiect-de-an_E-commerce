@@ -94,6 +94,19 @@
         </ul>
         <ul class="navbar-nav flex-row align-items-center gap-2 gap-lg-3">
           <li class="nav-item">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+              <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-outline-dark">Logout (@User.Identity.Name)</button>
+              </form>
+            }
+            else
+            {
+              <a class="btn btn-sm btn-outline-dark" asp-controller="Account" asp-action="Login">Login</a>
+            }
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link text-dark p-0 d-flex align-items-center gap-1 position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-label="Coș de cumpărături">
               <svg width="22" height="22" viewBox="0 0 24 24" class="d-lg-none" aria-hidden="true"><use xlink:href="#cart"></use></svg>
               <span class="d-none d-lg-inline text-uppercase">Coș (<vc:cart-count />)</span>
