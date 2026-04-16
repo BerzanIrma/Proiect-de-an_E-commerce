@@ -1,19 +1,44 @@
 @model Proiect__de_an.Models.CartViewModel
 @{
-    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var returnUrl = ViewData["CartReturnUrl"] as string ?? $"{Context.Request.Path}{Context.Request.QueryString}";
 }
 <div class="order-md-last">
-  <h2 id="cart-title" class="h5 d-flex justify-content-between align-items-center mb-3">
-    <span class="text-primary">Coșul tău</span>
+  <h1 id="cart-title" class="h3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="text-body">Coșul tău</span>
     <span class="badge bg-primary rounded-pill" aria-live="polite">@Model.TotalItems</span>
-  </h2>
+  </h1>
   @if (TempData["CartError"] is string cartError && !string.IsNullOrWhiteSpace(cartError))
   {
-    <div class="alert alert-danger py-2 px-3" role="alert">@cartError</div>
+    <div class="alert alert-danger py-2 px-3 rounded-3 shadow-sm border-0" role="alert">@cartError</div>
   }
   @if (TempData["CartWarning"] is string cartWarning && !string.IsNullOrWhiteSpace(cartWarning))
   {
-    <div class="alert alert-warning py-2 px-3" role="alert">@cartWarning</div>
+    <div class="alert alert-warning py-2 px-3 rounded-3 shadow-sm border-0" role="alert">@cartWarning</div>
+  }
+  @{
+    var showMemento = (ViewData["HasCartSnapshot"] is bool hasSnap && hasSnap) || Model.Items.Count > 0;
+  }
+  @if (showMemento)
+  {
+    <div class="rounded-3 border bg-light p-3 mb-4">
+      <p class="small text-uppercase text-secondary fw-semibold mb-3">Salvare &amp; restaurare</p>
+      <div class="d-grid gap-2">
+        @if (ViewData["HasCartSnapshot"] is bool hasSnap2 && hasSnap2)
+        {
+          <form method="post" asp-controller="Cart" asp-action="RestoreCartSnapshot" asp-route-returnUrl="@returnUrl" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary w-100">Restaurează starea salvată</button>
+          </form>
+        }
+        @if (Model.Items.Count > 0)
+        {
+          <form method="post" asp-controller="Cart" asp-action="SaveCartSnapshot" asp-route-returnUrl="@returnUrl" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-dark w-100">Salvează starea coșului</button>
+          </form>
+        }
+      </div>
+    </div>
   }
   @if (Model.Items.Count == 0)
   {
@@ -61,10 +86,6 @@
       </form>
     </div>
     <p class="d-flex justify-content-between fw-bold mb-3"><span>Total</span> <span>@Model.Total.ToString("C")</span></p>
-    @if (Model.FlyweightCacheSize.HasValue && Model.CartLinesCount.HasValue)
-    {
-      <p class="small text-muted mb-2">Flyweight: <strong>@Model.FlyweightCacheSize</strong> produse unice / <strong>@Model.CartLinesCount</strong> linii</p>
-    }
     <a asp-controller="Cart" asp-action="Checkout" class="w-100 btn btn-primary btn-lg">Finalizare comandă</a>
   }
 </div>

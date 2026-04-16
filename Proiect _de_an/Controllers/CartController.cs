@@ -5,6 +5,8 @@ using Proiect__de_an.Core.Lab2.AbstractFactory;
 using Proiect__de_an.Core.Lab5.Decorator;
 using Proiect__de_an.Core.Lab5.Bridge;
 using Proiect__de_an.Core.Lab4.Facade;
+using Proiect__de_an.Core.Lab6.Command;
+using Proiect__de_an.Core.Lab6.Memento;
 using Proiect__de_an.Models;
 using Proiect__de_an.Services;
 
@@ -14,11 +16,38 @@ public class CartController : Controller
 {
     private readonly ICartService _cart;
     private readonly ECommerceFacade _facade;
+    private readonly CartOriginator _cartOriginator;
+    private readonly CartCaretaker _cartCaretaker;
+    private readonly CartCommandInvoker _cartCommands;
 
-    public CartController(ICartService cart, ECommerceFacade facade)
+    public CartController(ICartService cart, ECommerceFacade facade, CartOriginator cartOriginator, CartCaretaker cartCaretaker, CartCommandInvoker cartCommands)
     {
         _cart = cart;
         _facade = facade;
+        _cartOriginator = cartOriginator;
+        _cartCaretaker = cartCaretaker;
+        _cartCommands = cartCommands;
+    }
+
+    /// <summary>După POST din coșul încărcat prin fetch, returnUrl nu trebuie să rămână GetCartFragment?fragment=1.</summary>
+    private static bool IsCartFragmentFetchUrl(string? url) =>
+        !string.IsNullOrEmpty(url)
+        && url.Contains("GetCartFragment", StringComparison.OrdinalIgnoreCase)
+        && (url.Contains("fragment=1", StringComparison.OrdinalIgnoreCase) || url.Contains("fragment%3D1", StringComparison.OrdinalIgnoreCase));
+
+    private string? SafeRefererPath()
+    {
+        var referer = Request.Headers.Referer.FirstOrDefault();
+        if (string.IsNullOrEmpty(referer) || !Uri.TryCreate(referer, UriKind.Absolute, out var u)) return null;
+        if (!string.Equals(u.Host, Request.Host.Host, StringComparison.OrdinalIgnoreCase)) return null;
+        return string.IsNullOrEmpty(u.PathAndQuery) ? "/" : u.PathAndQuery;
+    }
+
+    private string RedirectAfterCartPost(string? returnUrl, string ifMissingUrl)
+    {
+        if (IsCartFragmentFetchUrl(returnUrl))
+            return SafeRefererPath() ?? "/";
+        return string.IsNullOrEmpty(returnUrl) ? ifMissingUrl : returnUrl;
     }
 
     [HttpPost]
@@ -34,11 +63,12 @@ public class CartController : Controller
         {
             TempData["CartError"] = "Produsul are un preț invalid și nu a fost adăugat în coș.";
         }
-        else if (!User.IsInRole("Admin") && qty > 10)
+        else
         {
-            TempData["CartWarning"] = "Cantitatea maximă per produs este 10 pentru conturi standard.";
+            if (!User.IsInRole("Admin") && qty > 10)
+                TempData["CartWarning"] = "Cantitatea maximă per produs este 10 pentru conturi standard.";
+            _cartCommands.Run(new AddToCartCommand(id, name, priceValue, qty));
         }
-        _cart.AddItem(id, name, priceValue, qty);
         var vm = _cart.GetCartViewModel();
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
         {
@@ -49,18 +79,24 @@ public class CartController : Controller
         return Redirect(string.IsNullOrEmpty(returnUrl) ? Url.Action("Index", "Home") ?? "/" : returnUrl);
     }
 
+    /// <summary>
+    /// Pagină completă (cu _Layout) la navigare directă; pentru actualizarea offcanvas-ului folosește ?fragment=1 (doar HTML-ul componentei).
+    /// </summary>
     [HttpGet]
     public IActionResult GetCartFragment()
     {
-        return ViewComponent("Cart");
+        if (string.Equals(Request.Query["fragment"], "1", StringComparison.Ordinal))
+            return ViewComponent("Cart");
+        return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Remove(int index, string? returnUrl)
     {
-        _cart.RemoveAt(index);
-        return Redirect(returnUrl ?? (Request.Headers.Referer.FirstOrDefault() ?? "/"));
+        _cartCommands.Run(new RemoveCartItemCommand(index));
+        var back = RedirectAfterCartPost(returnUrl, SafeRefererPath() ?? "/");
+        return Redirect(back);
     }
 
     [HttpPost]
@@ -71,23 +107,64 @@ public class CartController : Controller
             && !(User.Identity?.IsAuthenticated ?? false))
         {
             TempData["CartWarning"] = "Livrarea Express este disponibilă doar pentru utilizatori autentificați.";
-            var backUrl = returnUrl ?? (Request.Headers.Referer.FirstOrDefault() ?? "/");
+            var backUrl = RedirectAfterCartPost(returnUrl, SafeRefererPath() ?? "/");
             return RedirectToAction("Login", "Account", new { returnUrl = backUrl });
         }
 
-        _cart.SetDeliveryType(deliveryType);
+        _cartCommands.Run(new SetDeliveryCommand(deliveryType));
         var effectiveType = _cart.GetCartViewModel().DeliveryType;
         if (string.Equals(deliveryType, "Express", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(effectiveType, "Express", StringComparison.OrdinalIgnoreCase))
         {
             TempData["CartWarning"] = "Livrarea Express este disponibilă doar pentru utilizatori autentificați. S-a păstrat Standard.";
         }
-        return Redirect(returnUrl ?? (Request.Headers.Referer.FirstOrDefault() ?? "/"));
+        return Redirect(RedirectAfterCartPost(returnUrl, SafeRefererPath() ?? "/"));
     }
 
     public IActionResult Index()
     {
-        return View(_cart.GetCartViewModel());
+        var vm = _cart.GetCartViewModel();
+        ViewBag.HasCartSnapshot = _cartCaretaker.HasSavedSnapshot();
+        ViewBag.CanUndoCartCommand = _cartCommands.CanUndo;
+        return View(vm);
+    }
+
+    /// <summary>Command: anulează ultima operație pe coș (Undo din stiva persistată în sesiune).</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult UndoLastCartCommand(string? returnUrl)
+    {
+        if (_cartCommands.TryUndoLast())
+            TempData["CartMessage"] = "Ultima operație pe coș a fost anulată (Command — Undo).";
+        else
+            TempData["CartWarning"] = "Nu există operație de anulat.";
+        return Redirect(RedirectAfterCartPost(returnUrl, Url.Action(nameof(Index), "Cart") ?? "/"));
+    }
+
+    /// <summary>Memento: salvează snapshot-ul coșului în session (Caretaker).</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SaveCartSnapshot(string? returnUrl)
+    {
+        _cartCaretaker.SaveMemento(_cartOriginator.CreateMemento());
+        TempData["CartMessage"] = "Starea coșului a fost salvată (Memento). Poți restaura mai târziu.";
+        return Redirect(RedirectAfterCartPost(returnUrl, Url.Action(nameof(Index), "Cart") ?? "/"));
+    }
+
+    /// <summary>Memento: restaurează coșul din snapshot-ul salvat.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult RestoreCartSnapshot(string? returnUrl)
+    {
+        var memento = _cartCaretaker.LoadMemento();
+        if (memento == null)
+        {
+            TempData["CartError"] = "Nu există un snapshot salvat.";
+            return Redirect(RedirectAfterCartPost(returnUrl, Url.Action(nameof(Index), "Cart") ?? "/"));
+        }
+        _cartOriginator.RestoreMemento(memento);
+        TempData["CartMessage"] = "Coșul a fost restaurat la starea salvată (Memento).";
+        return Redirect(RedirectAfterCartPost(returnUrl, Url.Action(nameof(Index), "Cart") ?? "/"));
     }
 
     [HttpGet]

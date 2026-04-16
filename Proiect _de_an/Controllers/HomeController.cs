@@ -22,14 +22,29 @@ public class HomeController : Controller
         {
             haineFactory.CreateProduct("1", "Bluză", 89m),
             haineFactory.CreateProduct("2", "Pantaloni", 120m),
-            haineFactory.CreateProduct("3", "Rochie", 159m),
-            haineFactory.CreateProduct("4", "Tricou", 45m),
-            accesoriiFactory.CreateProduct("5", "Curea", 75m),
-            accesoriiFactory.CreateProduct("6", "Gentă", 129m),
-            accesoriiFactory.CreateProduct("7", "Eșarfă", 55m),
-            accesoriiFactory.CreateProduct("8", "Pandantiv", 45m)
+            haineFactory.CreateProduct("3", "Camasa", 99m),
+            haineFactory.CreateProduct("4", "Pantaloni barbati", 130m),
+            accesoriiFactory.CreateProduct("5", "Geantă Eleganța", 129m),
+            accesoriiFactory.CreateProduct("6", "Geantă Chic Neagră", 149m),
+            accesoriiFactory.CreateProduct("7", "Eșarfă Elegantă Mătase", 55m),
+            accesoriiFactory.CreateProduct("8", "Eșarfă Casual", 65m)
         };
-        return View(new HomeViewModel { OverviewProducts = overviewProducts });
+        var overviewImages = new List<string>
+        {
+            "product-item-femei-1.jpg",
+            "product-item-femei-2.jpg",
+            "product-item-barbati-1.jpg",
+            "product-item-barbati-2.jpg",
+            "product-item-acc-barbati-1.jpg",
+            "product-item-acc-barbati-2.jpg",
+            "product-item-acc-femei-1.jpg",
+            "product-item-acc-femei-2.jpg"
+        };
+        return View(new HomeViewModel
+        {
+            OverviewProducts = overviewProducts,
+            OverviewImageFileNames = overviewImages
+        });
     }
 
     public IActionResult Privacy()

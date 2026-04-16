@@ -21,6 +21,17 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<Proiect__de_an.Core.Lab5.Flyweight.ProductFlyweightFactory>();
+builder.Services.AddSingleton<Proiect__de_an.Core.Lab6.Strategy.ProductSortStrategyFactory>();
+// Lab6 Observer: EventManager + abonare observatori (Subscribe), ca în diagrama clasică
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Observer.LoggingCartObserver>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Observer.CartMetricsObserver>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Observer.CartEventManager>(sp =>
+{
+    var events = new Proiect__de_an.Core.Lab6.Observer.CartEventManager();
+    events.Subscribe(sp.GetRequiredService<Proiect__de_an.Core.Lab6.Observer.LoggingCartObserver>());
+    events.Subscribe(sp.GetRequiredService<Proiect__de_an.Core.Lab6.Observer.CartMetricsObserver>());
+    return events;
+});
 builder.Services.AddScoped<Proiect__de_an.Services.CartService>();
 builder.Services.AddScoped<Proiect__de_an.Services.ICartService>(sp =>
     new Proiect__de_an.Core.Lab5.Proxy.CartServiceProxy(
@@ -28,6 +39,9 @@ builder.Services.AddScoped<Proiect__de_an.Services.ICartService>(sp =>
         sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Proiect__de_an.Core.Lab5.Proxy.CartServiceProxy>>(),
         sp.GetRequiredService<IHttpContextAccessor>()));
 builder.Services.AddScoped<Proiect__de_an.Core.Lab4.Facade.ECommerceFacade>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Memento.CartOriginator>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Memento.CartCaretaker>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Command.CartCommandInvoker>();
 
 var app = builder.Build();
 

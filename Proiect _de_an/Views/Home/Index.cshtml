@@ -1,8 +1,6 @@
 @model Proiect__de_an.Models.HomeViewModel
 @{
     ViewData["Title"] = "Home";
-    var k = Url.Content("~/kaira/");
-    var idx = 0;
 }
 
 <section id="billboard" class="bg-light py-5">
@@ -27,7 +25,7 @@
     <div class="row g-4">
       <div class="col-md-6">
         <a asp-controller="Shop" asp-action="Index" class="text-decoration-none d-block cat-item image-zoom-effect rounded overflow-hidden position-relative" style="aspect-ratio:16/10;">
-          <img src="@(k)images/cat-large-item1.jpg" alt="Haine" class="product-image img-fluid w-100 h-100 object-fit-cover">
+          <img src="~/kaira/images/cat-large-item1.jpg" asp-append-version="true" alt="Haine" class="product-image img-fluid w-100 h-100 object-fit-cover">
           <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white text-center" style="background: linear-gradient(transparent, rgba(0,0,0,.6));">
             <span class="text-uppercase fw-bold fs-5">Haine</span>
             <p class="mb-0 small opacity-90">Bărbați & Femei</p>
@@ -36,7 +34,7 @@
       </div>
       <div class="col-md-6">
         <a asp-controller="Shop" asp-action="Index" class="text-decoration-none d-block cat-item image-zoom-effect rounded overflow-hidden position-relative" style="aspect-ratio:16/10;">
-          <img src="@(k)images/cat-large-item2.jpg" alt="Accesorii" class="product-image img-fluid w-100 h-100 object-fit-cover">
+          <img src="~/kaira/images/cat-large-item2.jpg" asp-append-version="true" alt="Accesorii" class="product-image img-fluid w-100 h-100 object-fit-cover">
           <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white text-center" style="background: linear-gradient(transparent, rgba(0,0,0,.6));">
             <span class="text-uppercase fw-bold fs-5">Accesorii</span>
             <p class="mb-0 small opacity-90">Eșarfe și Genti</p>
@@ -54,13 +52,19 @@
       <a asp-controller="Shop" asp-action="Index" class="btn-link">Toate produsele</a>
     </div>
     <div class="row g-4">
-      @foreach (var p in Model.OverviewProducts)
+      @for (var i = 0; i < Model.OverviewProducts.Count; i++)
       {
-        idx = (Model.OverviewProducts.IndexOf(p) % 10) + 1;
+        var p = Model.OverviewProducts[i];
+        var imageFile = Model.OverviewImageFileNames.Count > i
+          ? Model.OverviewImageFileNames[i]
+          : $"product-item-{i + 1}.jpg";
+        var imageUrl = Url.Content($"~/kaira/images/{imageFile}");
         <div class="col-6 col-md-4 col-lg-3">
           <div class="product-item image-zoom-effect link-effect">
-            <div class="image-holder position-relative">
-              <img src="@(k)images/product-item-@(idx).jpg" alt="@p.Name" class="product-image img-fluid">
+            <div class="image-holder position-relative w-100">
+              <div class="ratio ratio-1x1 rounded overflow-hidden">
+                <img src="@imageUrl" asp-append-version="true" alt="@p.Name" class="product-image h-100 w-100 object-fit-cover">
+              </div>
               <div class="product-content mt-2">
                 <h5 class="element-title text-uppercase fs-6">@p.Name</h5>
                 <span>@p.Price.ToString("C")</span>

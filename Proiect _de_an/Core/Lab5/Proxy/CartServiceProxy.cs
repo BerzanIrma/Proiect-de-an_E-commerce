@@ -53,6 +53,12 @@ namespace Proiect__de_an.Core.Lab5.Proxy
             _subject.RemoveAt(index);
         }
 
+        public void RemoveProductQuantity(string productId, int quantity)
+        {
+            Log($"RemoveProductQuantity(productId: {productId}, quantity: {quantity})");
+            _subject.RemoveProductQuantity(productId, quantity);
+        }
+
         public void SetDeliveryType(string type)
         {
             // Demo restrictionare: Express doar pentru utilizatori autentificați

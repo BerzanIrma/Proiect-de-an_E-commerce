@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Coș";
+}
+
+<section class="py-5">
+  <div class="container" style="max-width: 640px;">
+    @await Component.InvokeAsync("Cart")
+  </div>
+</section>

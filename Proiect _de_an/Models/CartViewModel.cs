@@ -1,13 +1,17 @@
+using Proiect__de_an.Core.Lab6.Iterator;
+
 namespace Proiect__de_an.Models;
 
 public class CartViewModel
 {
     public List<CartItem> Items { get; set; } = new();
     public string DeliveryType { get; set; } = "Standard"; // "Standard" | "Express"
-    public decimal Subtotal => Items.Sum(i => i.LineTotal);
+    /// <summary>Subtotal calculat cu Iterator (Lab6) peste liniile coșului.</summary>
+    public decimal Subtotal => CartLineSubtotalCalculator.SumLineTotals(Items);
     public decimal DeliveryCost => DeliveryType == "Express" ? 15m : 5m;
     public decimal Total => Subtotal + DeliveryCost;
-    public int TotalItems => Items.Sum(i => i.Quantity);
+    /// <summary>Număr total articole (cantități) prin Iterator (Lab6).</summary>
+    public int TotalItems => CartLineSubtotalCalculator.SumQuantities(Items);
 
     // Opțiuni Decorator (ambalaj cadou, reducere fixă 10%)
     public bool GiftWrapRequested { get; set; }

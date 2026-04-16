@@ -124,9 +124,11 @@
 
   @if (TempData["CartMessage"] != null)
   {
-    <div class="alert alert-success alert-dismissible fade show rounded-0 mb-0 text-center" role="alert">
-      @TempData["CartMessage"]
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Închide"></button>
+    <div class="container py-3">
+      <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-0 border-0" role="alert">
+        @TempData["CartMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Închide"></button>
+      </div>
     </div>
   }
 
@@ -180,7 +182,7 @@
           var json = JSON.parse(req.responseText);
           var badge = document.getElementById('cartBadgeCount');
           if (badge) badge.textContent = json.totalItems || 0;
-          fetch('/Cart/GetCartFragment', { credentials: 'same-origin' })
+          fetch('/Cart/GetCartFragment?fragment=1', { credentials: 'same-origin' })
             .then(function(r) { return r.text(); })
             .then(function(html) {
               var el = document.getElementById('cartOffcanvasBody');

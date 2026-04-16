@@ -5,14 +5,39 @@
 
 <section class="py-5">
   <div class="container">
-    <h1 class="mb-4">Coșul tău</h1>
+    <h1 class="h3 mb-4">Coșul tău</h1>
     @if (Model.Items.Count == 0)
     {
-      <p class="text-secondary">Nu ai produse în coș.</p>
-      <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">Vezi magazinul</a>
+      <div style="max-width: 520px;">
+        <p class="text-secondary mb-3">Nu ai produse în coș.</p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">Vezi magazinul</a>
+      </div>
     }
     else
     {
+      <div class="rounded-3 border bg-light p-3 mb-4" style="max-width: 520px;">
+        <p class="small text-uppercase text-secondary fw-semibold mb-3">Salvare &amp; restaurare</p>
+        <div class="d-flex flex-wrap gap-2">
+          <form method="post" asp-action="SaveCartSnapshot" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-dark">Salvează starea coșului</button>
+          </form>
+          @if (ViewBag.HasCartSnapshot == true)
+          {
+            <form method="post" asp-action="RestoreCartSnapshot" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="m-0">
+              @Html.AntiForgeryToken()
+              <button type="submit" class="btn btn-primary">Restaurează starea salvată</button>
+            </form>
+          }
+          @if (ViewBag.CanUndoCartCommand == true)
+          {
+            <form method="post" asp-action="UndoLastCartCommand" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="m-0">
+              @Html.AntiForgeryToken()
+              <button type="submit" class="btn btn-outline-secondary">Anulează ultima operație (Command)</button>
+            </form>
+          }
+        </div>
+      </div>
       <div class="row">
         <div class="col-lg-8">
           <ul class="list-group list-group-flush">

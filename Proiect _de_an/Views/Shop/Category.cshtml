@@ -1,24 +1,58 @@
 @model Proiect__de_an.Models.CategoryViewModel
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
     ViewData["Title"] = Model.CategoryName;
-    var k = Url.Content("~/kaira/");
     var idx = 0;
 }
 
 <section class="bg-light py-5">
   <div class="container">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
       <h1 class="section-title mb-0">@Model.CategoryName</h1>
-      <a asp-action="Index" class="btn-link">← Înapoi la categorii</a>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <form method="get" asp-action="@ViewContext.RouteData.Values["action"]" asp-controller="Shop" class="d-flex align-items-center gap-2 mb-0">
+          <label for="sortSelect" class="small text-secondary mb-0">Sortare</label>
+          <select name="sort" id="sortSelect" class="form-select form-select-sm" style="width:auto; min-width: 11rem;" onchange="this.form.submit()">
+            @{
+              var cur = Model.CurrentSort ?? "";
+              var sortOptions = new[] { ("", "Implicită"), ("priceAsc", "Preț crescător"), ("priceDesc", "Preț descrescător"), ("nameAsc", "Nume A–Z") };
+            }
+            @foreach (var (val, label) in sortOptions)
+            {
+              if (val == cur)
+              {
+                <option value="@val" selected>@label</option>
+              }
+              else
+              {
+                <option value="@val">@label</option>
+              }
+            }
+          </select>
+        </form>
+        <a asp-action="Index" class="btn-link">← Înapoi la categorii</a>
+      </div>
     </div>
     <div class="row g-4">
       @foreach (var p in Model.Products)
       {
         idx = (Model.Products.IndexOf(p) % 10) + 1;
+        var imageFile = !string.IsNullOrEmpty(Model.ProductImageFilePrefix)
+          ? $"product-item-{Model.ProductImageFilePrefix}-{idx}.jpg"
+          : $"product-item-{idx}.jpg";
+        var imageUrl = Url.Content($"~/kaira/images/{imageFile}");
+        var imagePhysicalPath = System.IO.Path.Combine(Env.WebRootPath, "kaira", "images", imageFile);
+        var imageMissing = !System.IO.File.Exists(imagePhysicalPath);
         <div class="col-6 col-md-4 col-lg-3">
           <div class="product-item image-zoom-effect link-effect">
-            <div class="image-holder position-relative">
-              <img src="@(k)images/product-item-@(idx).jpg" alt="@p.Name" class="product-image img-fluid">
+            <div class="image-holder position-relative w-100">
+              <div class="ratio ratio-1x1 rounded overflow-hidden">
+                <img src="@imageUrl" asp-append-version="true" alt="@p.Name" class="product-image h-100 w-100 object-fit-cover">
+              </div>
+              @if (Env.IsDevelopment() && imageMissing)
+              {
+                <p class="small text-danger mt-1 mb-0">Lipsește în wwwroot: <code>kaira/images/@imageFile</code></p>
+              }
               <div class="product-content mt-2">
                 <h5 class="element-title text-uppercase fs-6">@p.Name</h5>
                 <span>@p.Price.ToString("C")</span>
