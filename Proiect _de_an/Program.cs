@@ -39,6 +39,9 @@ builder.Services.AddScoped<Proiect__de_an.Services.ICartService>(sp =>
         sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Proiect__de_an.Core.Lab5.Proxy.CartServiceProxy>>(),
         sp.GetRequiredService<IHttpContextAccessor>()));
 builder.Services.AddScoped<Proiect__de_an.Core.Lab4.Facade.ECommerceFacade>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab7.TemplateMethod.CheckoutTemplateFactory>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab7.ChainOfResponsibility.CheckoutPaymentValidationChainFactory>();
+builder.Services.AddScoped<Proiect__de_an.Core.Lab7.Mediator.ICheckoutMediator, Proiect__de_an.Core.Lab7.Mediator.CheckoutMediator>();
 builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Memento.CartOriginator>();
 builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Memento.CartCaretaker>();
 builder.Services.AddScoped<Proiect__de_an.Core.Lab6.Command.CartCommandInvoker>();

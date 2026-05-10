@@ -1,3 +1,4 @@
+@model Proiect__de_an.Models.ShopIndexViewModel
 @{
     ViewData["Title"] = "Magazin";
 }
@@ -6,6 +7,21 @@
   <div class="container">
     <h1 class="section-title text-center mb-2">Magazin</h1>
     <p class="text-center text-secondary mb-5">Alege categoria și explorează produsele.</p>
+    <div class="alert alert-light border mb-5">
+      <h2 class="h6 text-uppercase mb-2">Visitor (Lab7) - Statistici categorii</h2>
+      <p class="mb-1">Noduri totale: <strong>@Model.TotalCategoryNodes</strong></p>
+      <p class="mb-1">Categorii compuse: <strong>@Model.CategoryGroupsCount</strong></p>
+      <p class="mb-2">Subcategorii (leaf): <strong>@Model.SubcategoryCount</strong></p>
+      <details>
+        <summary class="small text-secondary">Afișează paths calculate cu Visitor</summary>
+        <ul class="small mb-0 mt-2">
+          @foreach (var path in Model.CategoryPaths)
+          {
+            <li>@path</li>
+          }
+        </ul>
+      </details>
+    </div>
 
     <div class="mb-5">
       <h2 class="h5 text-uppercase fw-bold mb-4 border-bottom pb-2">Haine</h2>

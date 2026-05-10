@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Proiect__de_an.Core.Lab7.Visitor;
 
 namespace Proiect__de_an.Core.Lab4.Composite
 {
@@ -19,5 +20,6 @@ namespace Proiect__de_an.Core.Lab4.Composite
         public string GetName() => _name;
         public string GetPath() => _path;
         public IEnumerable<ICategoryComponent> GetChildren() => [];
+        public void Accept(ICategoryVisitor visitor) => visitor.VisitLeaf(this);
     }
 }

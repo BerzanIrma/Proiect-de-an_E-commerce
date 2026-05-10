@@ -1,10 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Proiect__de_an.Core.Lab2.AbstractFactory;
-using Proiect__de_an.Core.Lab5.Decorator;
-using Proiect__de_an.Core.Lab5.Bridge;
-using Proiect__de_an.Core.Lab4.Facade;
+using Proiect__de_an.Core.Lab7.Mediator;
+using Proiect__de_an.Core.Lab7.State;
 using Proiect__de_an.Core.Lab6.Command;
 using Proiect__de_an.Core.Lab6.Memento;
 using Proiect__de_an.Models;
@@ -14,16 +12,17 @@ namespace Proiect__de_an.Controllers;
 
 public class CartController : Controller
 {
+    private const string CheckoutStateSessionKey = "CheckoutOrderState";
     private readonly ICartService _cart;
-    private readonly ECommerceFacade _facade;
+    private readonly ICheckoutMediator _checkoutMediator;
     private readonly CartOriginator _cartOriginator;
     private readonly CartCaretaker _cartCaretaker;
     private readonly CartCommandInvoker _cartCommands;
 
-    public CartController(ICartService cart, ECommerceFacade facade, CartOriginator cartOriginator, CartCaretaker cartCaretaker, CartCommandInvoker cartCommands)
+    public CartController(ICartService cart, ICheckoutMediator checkoutMediator, CartOriginator cartOriginator, CartCaretaker cartCaretaker, CartCommandInvoker cartCommands)
     {
         _cart = cart;
-        _facade = facade;
+        _checkoutMediator = checkoutMediator;
         _cartOriginator = cartOriginator;
         _cartCaretaker = cartCaretaker;
         _cartCommands = cartCommands;
@@ -68,6 +67,7 @@ public class CartController : Controller
             if (!User.IsInRole("Admin") && qty > 10)
                 TempData["CartWarning"] = "Cantitatea maximă per produs este 10 pentru conturi standard.";
             _cartCommands.Run(new AddToCartCommand(id, name, priceValue, qty));
+            ResetCheckoutState();
         }
         var vm = _cart.GetCartViewModel();
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -95,6 +95,7 @@ public class CartController : Controller
     public IActionResult Remove(int index, string? returnUrl)
     {
         _cartCommands.Run(new RemoveCartItemCommand(index));
+        ResetCheckoutState();
         var back = RedirectAfterCartPost(returnUrl, SafeRefererPath() ?? "/");
         return Redirect(back);
     }
@@ -112,6 +113,7 @@ public class CartController : Controller
         }
 
         _cartCommands.Run(new SetDeliveryCommand(deliveryType));
+        ResetCheckoutState();
         var effectiveType = _cart.GetCartViewModel().DeliveryType;
         if (string.Equals(deliveryType, "Express", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(effectiveType, "Express", StringComparison.OrdinalIgnoreCase))
@@ -173,43 +175,105 @@ public class CartController : Controller
         var vm = _cart.GetCartViewModel();
         if (vm.TotalItems == 0)
             return RedirectToAction(nameof(Index));
+
+        var orderState = new OrderStateContext(GetCheckoutStateName());
+        SaveCheckoutStateName(orderState.CurrentStateName);
+
         vm.FinalTotal = vm.Total;
+        ViewBag.SelectedPaymentMethod = "Card";
+        ViewBag.OrderPaymentStatus = GetPaymentStatusLabel(orderState.CurrentStateName);
+        ViewBag.OrderPaymentStatusClass = GetPaymentStatusClass(orderState.CurrentStateName);
         return View(vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Checkout(bool giftWrap = false, bool applyDiscount = false, string paymentMethod = "Card")
+    public IActionResult Checkout(
+        bool giftWrap = false,
+        bool applyDiscount = false,
+        string paymentMethod = "Card",
+        string actionType = "update",
+        string? cardHolder = null,
+        string? cardNumber = null,
+        string? cardExpiry = null,
+        string? cardCvv = null)
     {
         var vm = _cart.GetCartViewModel();
         if (vm.TotalItems == 0)
             return RedirectToAction(nameof(Index));
 
-        IOrder order = vm.DeliveryType == "Express"
-            ? _facade.CreateExpressOrder(vm.Subtotal)
-            : _facade.CreateStandardOrder(vm.Subtotal);
-
-        if (applyDiscount)
-            order = new DiscountOrderDecorator(order);
-        if (giftWrap)
-        {
-            vm.GiftWrapFee = 5m;
-            order = _facade.CreateOrderWithGiftWrap(order, vm.GiftWrapFee);
-        }
+        ViewBag.SelectedPaymentMethod = paymentMethod;
+        ViewBag.CardHolder = cardHolder;
+        ViewBag.CardNumber = cardNumber;
+        ViewBag.CardExpiry = cardExpiry;
+        ViewBag.CardCvv = cardCvv;
 
         vm.GiftWrapRequested = giftWrap;
         vm.DiscountApplied = applyDiscount;
-        vm.FinalTotal = order.Total;
+        vm.GiftWrapFee = giftWrap ? vm.GiftWrapFee : 0m;
 
-        // Bridge (Lab5): abstracția Payment + implementare IPaymentProcessor (Card / PayPal).
-        Proiect__de_an.Core.Lab5.Bridge.IPaymentProcessor processor = paymentMethod == "PayPal"
-            ? new PayPalPaymentProcessor()
-            : new Proiect__de_an.Core.Lab5.Bridge.CardPaymentProcessor();
+        var mediatorResult = _checkoutMediator.Handle(new CheckoutMediatorRequest
+        {
+            Subtotal = vm.Subtotal,
+            DeliveryCost = vm.DeliveryCost,
+            DeliveryType = vm.DeliveryType,
+            GiftWrapRequested = giftWrap,
+            GiftWrapFee = vm.GiftWrapFee,
+            DiscountApplied = applyDiscount,
+            PaymentMethod = paymentMethod,
+            ActionType = actionType,
+            CurrentOrderStateName = GetCheckoutStateName(),
+            CardHolder = cardHolder,
+            CardNumber = cardNumber,
+            CardExpiry = cardExpiry,
+            CardCvv = cardCvv
+        });
 
-        Payment payment = new OnlineOrderPayment(order, processor);
-        ViewBag.PaymentMessage = payment.Execute();
-        ViewBag.PaymentProcessorName = processor.Name;
+        SaveCheckoutStateName(mediatorResult.NextOrderStateName);
+        vm.GiftWrapFee = giftWrap ? mediatorResult.GiftWrapFeeApplied : 0m;
+        vm.FinalTotal = mediatorResult.FinalTotal;
+        ViewBag.PaymentMessage = mediatorResult.PaymentMessage;
+        ViewBag.PaymentError = mediatorResult.PaymentError;
+        ViewBag.PaymentProcessorName = mediatorResult.PaymentProcessorName;
+        ViewBag.CheckoutTemplateName = mediatorResult.CheckoutTemplateName;
+        ViewBag.OrderPaymentStatus = GetPaymentStatusLabel(mediatorResult.NextOrderStateName);
+        ViewBag.OrderPaymentStatusClass = GetPaymentStatusClass(mediatorResult.NextOrderStateName);
 
         return View(vm);
+    }
+
+    private string GetCheckoutStateName()
+    {
+        return HttpContext.Session.GetString(CheckoutStateSessionKey) ?? "CartOpen";
+    }
+
+    private void SaveCheckoutStateName(string stateName)
+    {
+        HttpContext.Session.SetString(CheckoutStateSessionKey, stateName);
+    }
+
+    private void ResetCheckoutState()
+    {
+        SaveCheckoutStateName("CartOpen");
+    }
+
+    private static string GetPaymentStatusLabel(string stateName)
+    {
+        return stateName switch
+        {
+            "Paid" or "Shipped" => "Achitat",
+            "Cancelled" => "Anulată",
+            _ => "Neachitat"
+        };
+    }
+
+    private static string GetPaymentStatusClass(string stateName)
+    {
+        return stateName switch
+        {
+            "Paid" or "Shipped" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
     }
 }

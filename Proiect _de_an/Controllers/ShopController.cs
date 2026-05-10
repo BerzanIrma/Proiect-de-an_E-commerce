@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Proiect__de_an.Core.Lab2.FactoryMethod;
+using Proiect__de_an.Core.Lab4.Facade;
 using Proiect__de_an.Core.Lab6.Strategy;
+using Proiect__de_an.Core.Lab7.Visitor;
 using Proiect__de_an.Models;
 
 namespace Proiect__de_an.Controllers
@@ -8,15 +10,33 @@ namespace Proiect__de_an.Controllers
     public class ShopController : Controller
     {
         private readonly ProductSortStrategyFactory _sortFactory;
+        private readonly ECommerceFacade _facade;
 
-        public ShopController(ProductSortStrategyFactory sortFactory)
+        public ShopController(ProductSortStrategyFactory sortFactory, ECommerceFacade facade)
         {
             _sortFactory = sortFactory;
+            _facade = facade;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var tree = _facade.GetCategoryTree();
+
+            var countVisitor = new CategoryNodeCountVisitor();
+            tree.Accept(countVisitor);
+
+            var pathsVisitor = new CategoryPathListVisitor();
+            tree.Accept(pathsVisitor);
+
+            var vm = new ShopIndexViewModel
+            {
+                TotalCategoryNodes = countVisitor.TotalNodes,
+                CategoryGroupsCount = countVisitor.CompositeCount,
+                SubcategoryCount = countVisitor.LeafCount,
+                CategoryPaths = pathsVisitor.Paths.ToList()
+            };
+
+            return View(vm);
         }
 
         private CategoryViewModel BuildCategory(string categoryName, List<IProduct> products, string? sort, string? productImageFilePrefix = null)

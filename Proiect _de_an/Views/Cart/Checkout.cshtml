@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Finalizare comandă";
     var displayTotal = Model.FinalTotal > 0 ? Model.FinalTotal : Model.Total;
+    var selectedPaymentMethod = (string?)ViewBag.SelectedPaymentMethod ?? "Card";
+    var isCardSelected = string.Equals(selectedPaymentMethod, "Card", StringComparison.OrdinalIgnoreCase);
+    var paymentStatus = (string?)ViewBag.OrderPaymentStatus ?? "Neachitat";
+    var paymentStatusClass = (string?)ViewBag.OrderPaymentStatusClass ?? "secondary";
 }
 
 <section class="py-5">
@@ -14,6 +18,10 @@
             <h5 class="card-title mb-3">Detalii livrare</h5>
             <p class="mb-1"><strong>Tip livrare:</strong> @(Model.DeliveryType == "Express" ? "Express (1–2 zile lucrătoare)" : "Standard (3–5 zile lucrătoare)")</p>
             <p class="mb-3 text-muted small">Cost livrare: @Model.DeliveryCost.ToString("C")</p>
+            <p class="mb-3">
+              <strong>Status plată:</strong>
+              <span class="badge bg-@paymentStatusClass">@paymentStatus</span>
+            </p>
             <hr />
 
             <h6 class="mb-2">Opțiuni</h6>
@@ -29,15 +37,49 @@
               </div>
               <hr />
               <h6 class="mb-2">Metodă de plată </h6>
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="payCard" value="Card" checked />
-                <label class="form-check-label" for="payCard">Card online</label>
+              <div class="row g-2 mb-2">
+                <div class="col-md-6">
+                  <label class="payment-choice border rounded p-2 w-100 @(isCardSelected ? "active-choice" : "")" for="payCard">
+                    <input class="form-check-input me-2 payment-method-input" type="radio" name="paymentMethod" id="payCard" value="Card" @(isCardSelected ? "checked" : "") />
+                    <span class="fw-semibold">Card online</span>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="payment-choice border rounded p-2 w-100 @(!isCardSelected ? "active-choice" : "")" for="payPayPal">
+                    <input class="form-check-input me-2 payment-method-input" type="radio" name="paymentMethod" id="payPayPal" value="PayPal" @(!isCardSelected ? "checked" : "") />
+                    <span class="fw-semibold">PayPal</span>
+                  </label>
+                </div>
               </div>
-              <div class="form-check mb-2">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="payPayPal" value="PayPal" />
-                <label class="form-check-label" for="payPayPal">PayPal</label>
+              <div id="cardDetails" class="border rounded p-3 mb-3" style="display:@(isCardSelected ? "block" : "none")">
+                <h6 class="mb-2">Date card (demo)</h6>
+                <div class="mb-2">
+                  <label class="form-label small mb-1" for="cardHolder">Nume titular</label>
+                  <input class="form-control form-control-sm" id="cardHolder" name="cardHolder" value="@ViewBag.CardHolder" placeholder="Ex: Ionescu Maria" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small mb-1" for="cardNumber">Număr card</label>
+                  <input class="form-control form-control-sm" id="cardNumber" name="cardNumber" value="@ViewBag.CardNumber" placeholder="1234 5678 9012 3456" />
+                </div>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label small mb-1" for="cardExpiry">Expirare</label>
+                    <input class="form-control form-control-sm" id="cardExpiry" name="cardExpiry" value="@ViewBag.CardExpiry" placeholder="MM/YY" />
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small mb-1" for="cardCvv">CVV</label>
+                    <input class="form-control form-control-sm" id="cardCvv" name="cardCvv" value="@ViewBag.CardCvv" placeholder="123" />
+                  </div>
+                </div>
               </div>
-              <button type="submit" class="btn btn-outline-primary btn-sm">Actualizează total</button>
+              <div id="paypalInfo" class="alert alert-info py-2 px-3 mb-3" style="display:@(isCardSelected ? "none" : "block")">
+                Plata PayPal este simulată. Pentru demo, apasă <strong>Achită comanda</strong>.
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" name="actionType" value="update" class="btn btn-outline-primary btn-sm">Actualizează total</button>
+                <button type="submit" name="actionType" value="pay" class="btn btn-primary btn-sm">Achită comanda</button>
+                <button type="submit" name="actionType" value="cancel" class="btn btn-outline-danger btn-sm">Anulează comanda</button>
+              </div>
             </form>
 
             <hr />
@@ -62,7 +104,13 @@
               <p class="d-flex justify-content-between mb-1 text-success"><span>Reducere @(Model.DisplayDiscountPercent)%</span> <span>—</span></p>
             }
             <p class="d-flex justify-content-between fw-bold fs-5 mt-2"><span>Total</span> <span>@displayTotal.ToString("C")</span></p>
-            <div class="alert alert-success mt-3 mb-0" role="status">
+            @if (ViewBag.PaymentError != null)
+            {
+              <div class="alert alert-danger mt-3 mb-2" role="alert">
+                @ViewBag.PaymentError
+              </div>
+            }
+            <div class="alert @(ViewBag.PaymentError != null ? "alert-warning" : "alert-success") mt-3 mb-0" role="status">
               Comanda ta a fost înregistrată (demo). Livrare: <strong>@Model.DeliveryType</strong>.
               @if (Model.GiftWrapRequested) { <span> | Ambalaj cadou inclus.</span> }
               @if (Model.DiscountApplied) { <span> | Reducere @(Model.DisplayDiscountPercent)% aplicată.</span> }
@@ -78,3 +126,39 @@
     </div>
   </div>
 </section>
+
+<style>
+  .payment-choice {
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .payment-choice.active-choice {
+    border-color: #0d6efd !important;
+    background-color: #eaf2ff;
+  }
+</style>
+
+<script>
+  (() => {
+    const cardRadio = document.getElementById("payCard");
+    const paypalRadio = document.getElementById("payPayPal");
+    const cardDetails = document.getElementById("cardDetails");
+    const paypalInfo = document.getElementById("paypalInfo");
+    const choices = document.querySelectorAll(".payment-choice");
+
+    if (!cardRadio || !paypalRadio || !cardDetails || !paypalInfo) return;
+
+    const refreshPaymentUi = () => {
+      const cardSelected = cardRadio.checked;
+      cardDetails.style.display = cardSelected ? "block" : "none";
+      paypalInfo.style.display = cardSelected ? "none" : "block";
+      choices.forEach(choice => choice.classList.remove("active-choice"));
+      (cardSelected ? cardRadio : paypalRadio).closest(".payment-choice")?.classList.add("active-choice");
+    };
+
+    cardRadio.addEventListener("change", refreshPaymentUi);
+    paypalRadio.addEventListener("change", refreshPaymentUi);
+    refreshPaymentUi();
+  })();
+</script>
